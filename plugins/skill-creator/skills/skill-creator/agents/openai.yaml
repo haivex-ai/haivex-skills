@@ -1,0 +1,4 @@
+interface:
+  display_name: "技能创建器"
+  short_description: "将工作流程整理成可复用技能，或改进已有技能"
+  default_prompt: "帮我把一个工作流程整理成可复用的技能。"

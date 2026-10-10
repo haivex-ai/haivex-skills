@@ -1,0 +1,6 @@
+interface:
+  display_name: "DSZ 商品整理"
+  short_description: "按 DSZ 模板整理商品、SKU、图片和交付文件"
+  default_prompt: "请按 DSZ 流程整理我提供的商品资料。"
+policy:
+  allow_implicit_invocation: true
