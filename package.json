@@ -1,0 +1,11 @@
+{
+  "name": "haivex-skills",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "publish": "bun scripts/publish.ts",
+    "pack": "bun scripts/publish.ts --pack-only",
+    "test": "bun test tests"
+  },
+  "dependencies": { "fflate": "0.8.3" }
+}

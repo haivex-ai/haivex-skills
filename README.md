@@ -1,71 +1,77 @@
 # Haivex Skills
 
-Haivex 官方文件技能。正文、脚本和模板以本仓库为唯一发布来源，客户端从 `haivex-ai/haivex-skills` 的 `main` 分支安装到本机。目录采用 Codex 官方的 marketplace 与纯技能插件格式。
+Haivex 官方技能源码。技能沿用 Codex 的 marketplace 与 portable plugin 格式，**通过 GitHub Release 版本包分发**。修改或推送源码不会直接更新用户安装的技能，执行发布命令后才生效。
 
-## 目录
+## 发布或更新
+
+首次准备：安装 Bun 和 GitHub CLI，运行 `gh auth login` 登录有仓库写入权限的账号，然后在本目录运行一次 `bun install`。
+
+修改 `plugins/dsz-product-delivery/skills/dsz-product-delivery/SKILL.md` 或其中的模板后：
+
+```sh
+bun run publish dsz-product-delivery
+```
+
+创建器同理：
+
+```sh
+bun run publish skill-creator
+```
+
+命令自动完成：
+
+1. 检查技能内容、市场条目、当前分支及远端状态。
+2. 将目标插件的 `plugin.json` 版本自动增加一个 patch，例如 `1.0.0` → `1.0.1`。
+3. 只提交目标插件目录与 marketplace，推送 `main`。
+4. 从该 Git 提交生成包含技能正文、配置、脚本和模板的 ZIP 包。
+5. 创建 Release 草稿，上传并核对 SHA-256 与大小，全部成功后正式发布。
+
+客户端刷新技能页后可检测到新版并点击「更新」。技能更新不需要重新发客户端，不使用 R2、数据库或 npm registry，也不要求下载者登录 GitHub。发布命令中的 `package.json` 仅管理开发脚本与打包依赖。
+
+发布前暂存区需为空，本地 `main` 不能落后于远端；命令不会自动合并分支。其他插件的未提交修改不会被加入本次提交。
+
+## 预览与重试
+
+仅生成本地包，不增加版本、不提交、不上传：
+
+```sh
+bun run pack dsz-product-delivery
+```
+
+产物在忽略提交的 `dist/` 中。预览包允许包含未提交的编辑；正式包始终从固定的 Git 提交生成。
+
+首次发布已有版本，或发布失败后继续相同版本：
+
+```sh
+bun run publish dsz-product-delivery --no-bump
+```
+
+发布失败后已增加的版本不会回退。`--no-bump` 会复用同版本草稿并核对已有附件；相同版本已成功发布时直接返回，禁止覆盖不同内容。若命令被强制终止留下 `.git/haivex-skill-publish.lock`，确认没有发布任务运行后再删除该锁文件。
+
+## 包格式与版本
 
 ```text
 .agents/plugins/marketplace.json
-plugins/
-  skill-creator/
-    plugin.json
-    skills/skill-creator/
-      SKILL.md
-      agents/openai.yaml
-      scripts/
-  dsz-product-delivery/
-    plugin.json
-    skills/dsz-product-delivery/
-      SKILL.md
-      agents/openai.yaml
-      templates/
+plugins/<插件名>/
+  plugin.json
+  skills/<技能名>/
+    SKILL.md
+    agents/openai.yaml
+    scripts/ 或 templates/
 ```
 
-`marketplace.json` 决定展示哪些插件，`source.path` 相对于仓库根目录；其中 `source: local` 表示包在同一仓库内，不是用户电脑上的路径。`plugin.json` 使用官方当前推荐的 portable 插件格式，声明名称和版本，技能自动从包内 `skills/` 发现。技能本身仍遵循 `SKILL.md` 与可选 `agents/openai.yaml` 格式。
+marketplace 的 `source.path` 相对于仓库根目录；`source: local` 表示同仓库内的插件。一个插件可以带多个技能，包内技能共用插件版本。包不包含其他插件或仓库开发脚本。
 
-这里只发布纯技能插件，GitHub 仓库就是分发来源，不需要 `package.json` 或 `npm publish`。Codex 也支持 npm 来源，但这不是技能文件格式的要求。
+每个插件独立创建 Release，例如 `dsz-product-delivery@1.0.1`，附件为 `dsz-product-delivery-1.0.1.zip`。客户端只读取正式发布、非预发布的 Release，按每个插件的版本号选择最新包；从包内原始文件读取显示名称与描述，验证下载摘要、大小、路径及版本。
 
-参考：[官方插件打包说明](https://developers.openai.com/plugins/build/plugins) · [官方插件示例仓库](https://github.com/openai/plugins)。
+恢复旧内容时以更高版本重新发布。客户端不降级，本地有修改的技能不会被覆盖。需要下架整个插件时，将它的正式 Releases 全部改为草稿或删除；只撤回最新版本会重新展示前一个正式版本，已安装的更高版本仍不会降级。仅改 main 的 marketplace 不改变已发布包。
 
-## 首次发布
-
-创建公开 GitHub 仓库 `haivex-ai/haivex-skills`，默认分支使用 `main`，提交本目录全部文件。若使用 GitHub CLI，可在本目录执行：
-
-```sh
-git init -b main
-git add .
-git commit -m "Add initial Haivex skills"
-gh repo create haivex-ai/haivex-skills --public --source=. --remote=origin --push
-```
-
-如果已在网页创建空仓库，将最后一行改为：
-
-```sh
-git remote add origin https://github.com/haivex-ai/haivex-skills.git
-git push -u origin main
-```
-
-不需要上传 R2、登记数据库、运行构建或部署后台。客户端需要更新到支持 GitHub 技能来源的版本。
-
-## 日常修改
-
-1. 修改目标技能的 `SKILL.md`、`agents/openai.yaml` 或资源文件。
-2. 将对应 `plugins/<插件名>/plugin.json` 中的 `version` 递增，例如 `1.0.0` → `1.0.1`。
-3. 将文件和版本号一起提交并推送到 `main`。
-4. 客户端刷新技能页后即可安装或更新。
-
-名称或文件修改后也要递增对应版本。恢复历史内容时同样提高版本号，客户端不会降级；本地有修改时不会被官方更新覆盖。从 marketplace 移除条目相当于下架，不会删除用户已安装的文件。
-
-新增独立插件时创建 `plugins/<插件名>/plugin.json`，在其 `skills/<id>/` 中补完 `SKILL.md` 和资源，再在 marketplace 添加来源条目。一个插件可以带多个技能，包内技能共用插件版本。模板等资源直接提交到 Git，不使用需要额外下载的 Git LFS 指针文件。
+当前 Haivex 只支持纯技能插件，不是完整的 Codex 插件运行时。包结构兼容现有 Codex 格式；Release 发布与更新是 Haivex 的分发流程。参考：[官方插件打包说明](https://developers.openai.com/plugins/build/plugins)。
 
 ## 验证
 
-创建器脚本不依赖额外安装的包，使用 Bun：
-
 ```sh
 bun test tests
-bun plugins/skill-creator/skills/skill-creator/scripts/quick_validate.ts plugins/skill-creator/skills/skill-creator
-bun plugins/skill-creator/skills/skill-creator/scripts/quick_validate.ts plugins/dsz-product-delivery/skills/dsz-product-delivery
 ```
 
-客户端安装时固定一个 Git 提交，目录与资源始终取自同一提交；安装后任务使用本地文件。创建器沿用其正文中的来源说明。
+创建器脚本与包内技能文件保持独立，不依赖本仓库开发环境。运行中使用的安装目录为 `~/.multi-agents/skills/`。
