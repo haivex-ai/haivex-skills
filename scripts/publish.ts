@@ -125,6 +125,7 @@ export const publish = async (root: string, id: string, options: { packOnly?: bo
     if (git(root, 'diff', '--cached', '--name-only')) throw new Error('请先处理暂存区，发布命令只提交目标插件与市场目录')
     const remote = git(root, 'remote', 'get-url', 'origin')
     if (!/github\.com(?::443)?[/:]haivex-ai\/haivex-skills(?:\.git)?$/.test(remote)) throw new Error('origin 必须指向 haivex-ai/haivex-skills')
+    console.log('检查 GitHub 权限与远端版本…')
     gh(root, 'auth', 'status')
     git(root, 'fetch', 'origin', 'main')
     git(root, 'merge-base', '--is-ancestor', 'origin/main', 'HEAD')
@@ -163,13 +164,15 @@ export const publish = async (root: string, id: string, options: { packOnly?: bo
       console.log(`版本已发布：https://github.com/${REPOSITORY}/releases/tag/${encodeURIComponent(tag)}`)
       return packed
     }
+    console.log(`推送源码并上传 ${tag}…`)
     git(root, 'push', 'origin', 'main')
     if (!existing) gh(root, 'release', 'create', tag, '--repo', REPOSITORY, '--target', revision, '--title', tag, '--notes', `发布 ${id} ${version}。`, '--draft')
     const prior = existing?.assets.find((asset) => asset.name === packed.filename)
     if (prior && !matching(prior)) throw new Error('草稿附件与本地包不同，未覆盖；请检查该草稿')
     if (!prior) gh(root, 'release', 'upload', tag, path, '--repo', REPOSITORY)
-    const uploaded = JSON.parse(gh(root, 'api', `repos/${REPOSITORY}/releases/tags/${encodeURIComponent(tag)}`)) as Release
-    if (!uploaded.assets.some(matching)) throw new Error('GitHub 附件摘要或大小不一致，保留草稿，请用 --no-bump 重试')
+    // 按标签查询的 REST 接口不返回草稿，上传后仍从维护者可见的列表中核对。
+    const uploaded = (JSON.parse(gh(root, 'api', `repos/${REPOSITORY}/releases?per_page=100`, '--paginate', '--slurp')) as Release[][]).flat().find((release) => release.tag_name === tag)
+    if (!uploaded?.assets.some(matching)) throw new Error('GitHub 附件摘要或大小不一致，保留草稿，请用 --no-bump 重试')
     gh(root, 'release', 'edit', tag, '--repo', REPOSITORY, '--draft=false', '--latest=false')
     console.log(`已发布：https://github.com/${REPOSITORY}/releases/tag/${encodeURIComponent(tag)}`)
     return packed

@@ -81,7 +81,7 @@ test('一条命令自动升版并提交；上传失败保留草稿，重试后�
     const save=()=>writeFileSync(path,JSON.stringify(state));
     if(args[0]==='auth') process.exit(0);
     if(args[0]==='api') {
-      if(args[1].includes('/releases/tags/')) console.log(JSON.stringify(state.release));
+      if(args[1].includes('/releases/tags/')) { console.error('草稿不支持按标签查询'); process.exit(1); }
       else console.log(JSON.stringify([state.release ? [state.release] : []]));
     } else if(args[1]==='create') {state.release={tag_name:args[2],target_commitish:args[args.indexOf('--target')+1],draft:true,prerelease:false,assets:[]};save();}
     else if(args[1]==='upload') {
