@@ -87,7 +87,7 @@ export const buildPackage = async (files: Record<string, Uint8Array>, id: string
       if (skill) {
         if (!identifier.test(skill[1]!) || skill[1]!.length > 64) throw new Error('技能名称无效')
         skillFiles.set(skill[1]!, (skillFiles.get(skill[1]!) ?? 0) + 1)
-        if (skill[2] === 'SKILL.md' || skill[2] === 'agents/openai.yaml') {
+        if (skill[2] === 'SKILL.md' || skill[2] === 'README.md' || skill[2] === 'agents/openai.yaml') {
           if (bytes.length > 128 * 1024) throw new Error('技能说明文件过大')
           if (skill[2].endsWith('.yaml')) Bun.YAML.parse(Buffer.from(bytes).toString('utf8'))
         }

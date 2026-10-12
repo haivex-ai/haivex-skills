@@ -36,6 +36,7 @@ skill-name/
 |-- SKILL.md                 Required skill instructions
 |   |-- YAML frontmatter     Required name and description
 |   `-- Markdown body        Instructions loaded when the skill is used
+|-- README.md                Human-facing overview shown in Haivex
 |-- agents/                  Optional UI metadata and invocation policy
 |   `-- openai.yaml
 |-- scripts/                 Optional executable helpers
@@ -115,9 +116,15 @@ The initializer creates the UI file. To update selected fields while preserving 
 
 Haivex currently uses these three interface fields and the invocation policy. Do not add other fields for new skills; preserve unrelated fields when updating existing files.
 
+### Human-Facing Overview
+
+For a completed Haivex skill, write a concise `README.md` in Chinese explaining what it helps with, what the user should provide, and what they will receive. Describe only supported outcomes; keep execution steps, tool names, schema details, template paths, and internal checks in `SKILL.md` or its supporting references.
+
+Haivex shows this overview below the example prompt and adds the title itself. A skill without `README.md` shows only its existing short description and prompt; the UI never substitutes `SKILL.md` for the overview. Update the overview when a change affects the skill's purpose, required inputs, or outputs.
+
 ### What Not to Include
 
-Include files that directly support the skill's work. Avoid adding a `README.md`, installation guide, changelog, duplicated quick reference, or other auxiliary documentation unless a specific task or packaging requirement calls for it.
+Include files that directly support the skill's work. The human-facing `README.md` is used by Haivex; avoid additional installation guides, changelogs, duplicated quick references, or other auxiliary documentation unless the task calls for them.
 
 ## Progressive Disclosure in Practice
 

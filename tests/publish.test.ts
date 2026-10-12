@@ -15,12 +15,14 @@ const base = () => ({
 })
 
 test('发包只包含目标插件，二进制资源字节保持原样，包可重复生成', async () => {
-  const files = { ...base(), 'plugins/example/skills/example/templates/table.xlsx': new Uint8Array([0, 255, 128, 2]), 'plugins/other/secret.txt': strToU8('other') }
+  const overview = strToU8('介绍用途、所需资料和交付结果。')
+  const files = { ...base(), 'plugins/example/skills/example/README.md': overview, 'plugins/example/skills/example/templates/table.xlsx': new Uint8Array([0, 255, 128, 2]), 'plugins/other/secret.txt': strToU8('other') }
   const first = await buildPackage(files, 'example', revision), second = await buildPackage(files, 'example', revision)
   expect(first.sha256).toBe(second.sha256)
   expect(first.tag).toBe('example@1.0.0')
   const extracted = unzipSync(first.bytes), prefix = `haivex-skills-${revision}/`
   expect(extracted[`${prefix}plugins/example/skills/example/templates/table.xlsx`]).toEqual(files['plugins/example/skills/example/templates/table.xlsx'])
+  expect(extracted[`${prefix}plugins/example/skills/example/README.md`]).toEqual(overview)
   expect(Object.keys(extracted).some((path) => path.includes('plugins/other'))).toBe(false)
   const marketplace = JSON.parse(Buffer.from(extracted[`${prefix}.agents/plugins/marketplace.json`]!).toString())
   expect(marketplace.plugins.map((entry: { name: string }) => entry.name)).toEqual(['example'])
@@ -38,6 +40,7 @@ test('拒绝目录错配、未完成内容、安装标记、越界与重名文�
     { ...base(), 'plugins/example/skills/example/.haivex-install.json': strToU8('{}') },
     { ...base(), 'plugins/example/skills/example/../escape': strToU8('escape') },
     { ...base(), 'plugins/example/skills/example/skill.md': strToU8('duplicate') },
+    { ...base(), 'plugins/example/skills/example/README.md': strToU8('x'.repeat(128 * 1024 + 1)) },
   ]) await expect(buildPackage(files, 'example', revision)).rejects.toThrow()
 })
 

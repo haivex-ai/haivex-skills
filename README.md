@@ -58,11 +58,14 @@ plugins/<插件名>/
   plugin.json
   skills/<技能名>/
     SKILL.md
+    README.md
     agents/openai.yaml
     scripts/ 或 templates/
 ```
 
 marketplace 的 `source.path` 相对于仓库根目录；`source: local` 表示同仓库内的插件。一个插件可以带多个技能，包内技能共用插件版本。包不包含其他插件或仓库开发脚本。
+
+`SKILL.md` 保存模型执行规则；同目录可添加 `README.md` 作为用户概览，只介绍用途、所需资料和交付结果。客户端详情展示概览，不显示执行规则；没有概览时只展示已有简介和试用提示词。修改概览后同样需要发布新的 GitHub Release，已安装技能更新后才会读取新文件。
 
 每个插件独立创建 Release，例如 `dsz-product-delivery@1.0.1`，附件为 `dsz-product-delivery-1.0.1.zip`。客户端只读取正式发布、非预发布的 Release，按每个插件的版本号选择最新包；从包内原始文件读取显示名称与描述，验证下载摘要、大小、路径及版本。
 
