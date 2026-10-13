@@ -97,7 +97,7 @@ export const buildPackage = async (files: Record<string, Uint8Array>, id: string
       await mkdir(join(temporary, ...parts.slice(0, -1)), { recursive: true })
       await writeFile(join(temporary, name), value)
     }
-    if (!skillFiles.size) throw new Error('插件中没有技能')
+    if (!skillFiles.size || skillFiles.size > 200) throw new Error('每个插件需要 1 至 200 个技能')
     for (const [skill, count] of skillFiles) {
       if (count > 300) throw new Error('单个技能文件过多')
       const result = await validateSkill(join(temporary, 'plugins', id, 'skills', skill))
@@ -105,7 +105,36 @@ export const buildPackage = async (files: Record<string, Uint8Array>, id: string
     }
     const bytes = zipSync(entries)
     if (bytes.length > 20 * 1024 * 1024) throw new Error('发布包超过 20 MiB')
-    return { id, version, revision, tag: `${id}@${version}`, filename: `${id}-${version}.zip`, bytes, sha256: createHash('sha256').update(bytes).digest('hex') }
+    // 可安装包在发布时生成，业务后端只读取清单并原样分发。
+    const assets = [{ filename: `${id}-${version}.zip`, bytes, sha256: createHash('sha256').update(bytes).digest('hex') }]
+    const skills = [...skillFiles.keys()].sort().map((skillId) => {
+      const directory = `plugins/${id}/skills/${skillId}/`
+      const skillEntries: Zippable = {}
+      for (const [name, content] of Object.entries(files).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) {
+        if (name.startsWith(directory)) skillEntries[name.slice(directory.length)] = [content, { mtime: new Date(2026, 0, 1) }]
+      }
+      const content = Buffer.from(files[`${directory}SKILL.md`]!).toString('utf8').replace(/^\uFEFF/, '').replace(/\r\n/g, '\n')
+      const meta = object(Bun.YAML.parse(/^---\n([\s\S]*?)\n---/.exec(content)![1]!))
+      const uiFile = files[`${directory}agents/openai.yaml`]
+      const ui = uiFile ? object(Bun.YAML.parse(Buffer.from(uiFile).toString('utf8'))) : {}
+      const info = object(ui.interface ?? {}), metadata = object(meta.metadata ?? {})
+      const text = (value: unknown) => typeof value === 'string' ? value.trim() : ''
+      const packageBytes = zipSync(skillEntries)
+      if (packageBytes.length > 20 * 1024 * 1024) throw new Error('单个技能包超过 20 MiB')
+      const sha256 = createHash('sha256').update(packageBytes).digest('hex')
+      const filename = `${skillId}-${version}.skill.zip`
+      assets.push({ filename, bytes: packageBytes, sha256 })
+      const readme = files[`${directory}README.md`]
+      const name = text(info.display_name) || skillId
+      const description = text(info.short_description) || text(metadata['short-description']) || text(meta.description)
+      const defaultPrompt = text(info.default_prompt)
+      if (name.length > 500 || !description || description.length > 2000 || defaultPrompt.length > 8000) throw new Error('技能展示元数据超出限制')
+      return { id: skillId, name, description, defaultPrompt, version, revision, sha256, size: packageBytes.length, filename, overview: readme ? Buffer.from(readme).toString('utf8').replace(/^\uFEFF/, '').trim() || null : null }
+    })
+    const index = Buffer.from(JSON.stringify({ schemaVersion: 1, plugin: id, version, revision, skills }))
+    if (index.length > 8 * 1024 * 1024) throw new Error('技能清单超过 8 MiB')
+    assets.push({ filename: 'skills-index.json', bytes: index, sha256: createHash('sha256').update(index).digest('hex') })
+    return { assets, id, version, revision, tag: `${id}@${version}`, filename: `${id}-${version}.zip`, bytes, sha256: createHash('sha256').update(bytes).digest('hex') }
   } finally { await rm(temporary, { recursive: true, force: true }) }
 }
 
@@ -115,7 +144,7 @@ export const publish = async (root: string, id: string, options: { packOnly?: bo
   await mkdir(join(root, 'dist'), { recursive: true })
   if (options.packOnly) {
     const path = join(root, 'dist', preview.filename)
-    await writeFile(path, preview.bytes)
+    for (const asset of preview.assets) await writeFile(join(root, 'dist', asset.filename), asset.bytes)
     console.log(`本地预览包：${path}（未升版本、未提交、未发布）`)
     return preview
   }
@@ -156,23 +185,25 @@ export const publish = async (root: string, id: string, options: { packOnly?: bo
     const archive = command(root, 'git', ['archive', '--format=zip', revision, '--', `plugins/${id}`, MARKETPLACE])
     const packed = await buildPackage(unzipSync(archive, { filter: (entry) => !entry.name.endsWith('/') }), id, revision)
     if (packed.version !== version) throw new Error('提交内版本与发布版本不一致')
-    const path = join(root, 'dist', packed.filename)
-    await writeFile(path, packed.bytes)
-    const matching = (asset: Release['assets'][number]) => asset.name === packed.filename && asset.size === packed.bytes.length && asset.digest === `sha256:${packed.sha256}`
+    for (const asset of packed.assets) await writeFile(join(root, 'dist', asset.filename), asset.bytes)
+    const matching = (published: Release['assets'][number], local: typeof packed.assets[number]) => published.name === local.filename && published.size === local.bytes.length && published.digest === `sha256:${local.sha256}`
+    const complete = (release: Release) => packed.assets.every((local) => release.assets.some((published) => matching(published, local)))
     if (existing && !existing.draft) {
-      if (!existing.assets.some(matching)) throw new Error('已发布版本与本地包不同，禁止覆盖')
+      if (!complete(existing)) throw new Error('已发布版本与本地包不同，禁止覆盖')
       console.log(`版本已发布：https://github.com/${REPOSITORY}/releases/tag/${encodeURIComponent(tag)}`)
       return packed
     }
     console.log(`推送源码并上传 ${tag}…`)
     git(root, 'push', 'origin', 'main')
     if (!existing) gh(root, 'release', 'create', tag, '--repo', REPOSITORY, '--target', revision, '--title', tag, '--notes', `发布 ${id} ${version}。`, '--draft')
-    const prior = existing?.assets.find((asset) => asset.name === packed.filename)
-    if (prior && !matching(prior)) throw new Error('草稿附件与本地包不同，未覆盖；请检查该草稿')
-    if (!prior) gh(root, 'release', 'upload', tag, path, '--repo', REPOSITORY)
+    for (const asset of packed.assets) {
+      const prior = existing?.assets.find((published) => published.name === asset.filename)
+      if (prior && !matching(prior, asset)) throw new Error('草稿附件与本地包不同，未覆盖；请检查该草稿')
+      if (!prior) gh(root, 'release', 'upload', tag, join(root, 'dist', asset.filename), '--repo', REPOSITORY)
+    }
     // 按标签查询的 REST 接口不返回草稿，上传后仍从维护者可见的列表中核对。
     const uploaded = (JSON.parse(gh(root, 'api', `repos/${REPOSITORY}/releases?per_page=100`, '--paginate', '--slurp')) as Release[][]).flat().find((release) => release.tag_name === tag)
-    if (!uploaded?.assets.some(matching)) throw new Error('GitHub 附件摘要或大小不一致，保留草稿，请用 --no-bump 重试')
+    if (!uploaded || !complete(uploaded)) throw new Error('GitHub 附件摘要或大小不一致，保留草稿，请用 --no-bump 重试')
     gh(root, 'release', 'edit', tag, '--repo', REPOSITORY, '--draft=false', '--latest=false')
     console.log(`已发布：https://github.com/${REPOSITORY}/releases/tag/${encodeURIComponent(tag)}`)
     return packed

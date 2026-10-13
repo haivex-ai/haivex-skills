@@ -26,6 +26,17 @@ test('发包只包含目标插件，二进制资源字节保持原样，包可�
   expect(Object.keys(extracted).some((path) => path.includes('plugins/other'))).toBe(false)
   const marketplace = JSON.parse(Buffer.from(extracted[`${prefix}.agents/plugins/marketplace.json`]!).toString())
   expect(marketplace.plugins.map((entry: { name: string }) => entry.name)).toEqual(['example'])
+  expect(first.assets.map(({ sha256 }) => sha256)).toEqual(second.assets.map(({ sha256 }) => sha256))
+  const index = JSON.parse(Buffer.from(first.assets.find((asset) => asset.filename === 'skills-index.json')!.bytes).toString())
+  expect(index).toMatchObject({ schemaVersion: 1, plugin: 'example', version: '1.0.0', revision })
+  const entry = index.skills[0]
+  expect(entry.overview).toBe(Buffer.from(overview).toString())
+  const installable = first.assets.find((asset) => asset.filename === entry.filename)!
+  expect(entry.sha256).toBe(installable.sha256)
+  expect(entry.size).toBe(installable.bytes.length)
+  expect(unzipSync(installable.bytes)['templates/table.xlsx']).toEqual(files['plugins/example/skills/example/templates/table.xlsx'])
+  expect(unzipSync(installable.bytes)['SKILL.md']).toEqual(files['plugins/example/skills/example/SKILL.md'])
+
 })
 
 test('版本自动递增，拒绝无效或溢出的版本', () => {
@@ -88,7 +99,7 @@ test('一条命令自动升版并提交；上传失败保留草稿，重试后�
       else console.log(JSON.stringify([state.release ? [state.release] : []]));
     } else if(args[1]==='create') {state.release={tag_name:args[2],target_commitish:args[args.indexOf('--target')+1],draft:true,prerelease:false,assets:[]};save();}
     else if(args[1]==='upload') {
-      if(state.failUpload){state.failUpload=false;save();console.error('模拟网络中断');process.exit(1);}
+      if(state.failUpload && state.uploads === 1){state.failUpload=false;save();console.error('模拟网络中断');process.exit(1);}
       const file=args[3],bytes=readFileSync(file);state.uploads++;state.release.assets.push({name:file.split('/').at(-1),size:bytes.length,digest:'sha256:'+createHash('sha256').update(bytes).digest('hex')});save();
     } else if(args[1]==='edit') {state.release.draft=false;save();}
     else throw new Error('未预期调用：'+args.join(' '));
@@ -103,10 +114,10 @@ test('一条命令自动升版并提交；上传失败保留草稿，重试后�
     expect(packed.version).toBe('1.0.1')
     const result = JSON.parse(await readFile(state, 'utf8'))
     expect(result.release.draft).toBe(false)
-    expect(result.uploads).toBe(1)
+    expect(result.uploads).toBe(packed.assets.length)
     expect(runGit(root, 'status', '--short')).toContain('?? unrelated.txt')
     expect(runGit(root, 'log', '-1', '--format=%s')).toBe('Release example@1.0.1')
     await publish(root, 'example', { noBump: true })
-    expect(JSON.parse(await readFile(state, 'utf8')).uploads).toBe(1)
+    expect(JSON.parse(await readFile(state, 'utf8')).uploads).toBe(packed.assets.length)
   } finally { process.env.PATH = priorPath }
 })
