@@ -1,0 +1,4 @@
+interface:
+  display_name: "PPT Master 演示文稿"
+  short_description: "创建、重构和美化可编辑 PPTX，支持模板、旁白与动画"
+  default_prompt: "请使用 PPT Master 为我制作演示文稿，先确认内容、受众和交付要求。"
