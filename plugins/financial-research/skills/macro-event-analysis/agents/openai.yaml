@@ -1,0 +1,4 @@
+interface:
+  display_name: "宏观事件分析"
+  short_description: "用六步框架分析宏观事件的市场影响"
+  default_prompt: "请按六步框架分析我提供的宏观事件，先确认事件和关注资产。"

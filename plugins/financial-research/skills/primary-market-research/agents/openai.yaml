@@ -1,0 +1,4 @@
+interface:
+  display_name: "一级市场研究"
+  short_description: "公司尽调、融资快报与赛道研究"
+  default_prompt: "请为我研究一家未上市公司，先确认公司名称和需要速览还是深度尽调。"

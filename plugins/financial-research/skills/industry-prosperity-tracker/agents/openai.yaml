@@ -1,0 +1,4 @@
+interface:
+  display_name: "全行业景气度跟踪模型"
+  short_description: "比较行业景气度，生成评分与跟踪看板"
+  default_prompt: "请比较我关注行业的景气度，并说明指标口径和证据缺口。"

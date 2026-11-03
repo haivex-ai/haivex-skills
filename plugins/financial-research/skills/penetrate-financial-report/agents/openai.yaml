@@ -1,0 +1,4 @@
+interface:
+  display_name: "公司十页纸-穿透财报分析"
+  short_description: "穿透财报科目，分析风险与隐含预期"
+  default_prompt: "请分析我提供的公司财报，先确认公司、报告期和分析深度。"

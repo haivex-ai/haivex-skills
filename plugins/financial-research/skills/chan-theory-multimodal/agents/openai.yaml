@@ -1,0 +1,4 @@
+interface:
+  display_name: "缠论多模态Ultra终极版"
+  short_description: "用 K 线、均线和 MACD 分析走势信号"
+  default_prompt: "请使用缠论框架分析我提供的 K 线数据，并说明数据周期和信号局限。"

@@ -1,0 +1,33 @@
+{
+  "as_of": "2026-06-07",
+  "industries": [
+    {
+      "name": "煤炭",
+      "board": "上游",
+      "macro_anchor": "PPI",
+      "macro_anchor_direction": "up",
+      "pull_forward_risk": "迎峰度夏补库或透支三季度需求, 需关注电厂日耗回落后的去库速度",
+      "indicators": [
+        {"name": "主焦煤库提价(京唐港)", "dim": "price", "direction": "up", "latest": 2070.0, "prev": 1830.0, "yoy": 0.05, "freq": "week", "unit": "元/吨", "update": "2026-06-07", "multi_source": true},
+        {"name": "动力煤期货结算价", "dim": "price", "direction": "up", "latest": 801.4, "prev": 962.0, "yoy": -0.15, "freq": "week", "unit": "元/吨", "update": "2026-06-07"},
+        {"name": "主流港口煤炭库存", "dim": "inventory", "direction": "down", "latest": 520.0, "prev": 560.0, "yoy": -0.08, "freq": "week", "unit": "万吨", "update": "2026-06-07"},
+        {"name": "煤炭开采洗选PPI同比", "dim": "profit", "direction": "up", "latest": -8.2, "prev": -10.5, "yoy": null, "freq": "month", "unit": "%", "update": "2026-05-31"},
+        {"name": "原煤产量当月值", "dim": "volume", "direction": "up", "latest": 38562.6, "prev": 44053.0, "yoy": -0.12, "freq": "month", "unit": "万吨", "update": "2026-05-31"},
+        {"name": "动力煤价格历史分位", "dim": "valuation_quantile", "direction": "up", "latest": 35.0, "prev": 40.0, "yoy": null, "freq": "week", "unit": "%", "update": "2026-06-07"}
+      ]
+    },
+    {
+      "name": "工程机械",
+      "board": "中游",
+      "macro_anchor": "PMI",
+      "macro_anchor_direction": "up",
+      "indicators": [
+        {"name": "挖掘机销量合计当月值", "dim": "volume", "direction": "up", "latest": 29590.0, "prev": 19270.0, "yoy": 0.185, "freq": "month", "unit": "台", "update": "2026-05-31", "multi_source": true},
+        {"name": "挖掘机出口当月值", "dim": "volume", "direction": "up", "latest": 10073.0, "prev": 7630.0, "yoy": 0.029, "freq": "month", "unit": "台", "update": "2026-05-31"},
+        {"name": "重卡销量当月值", "dim": "volume", "direction": "up", "latest": 11.15, "prev": 8.14, "yoy": -0.037, "freq": "month", "unit": "万辆", "update": "2026-05-31"},
+        {"name": "机械设备价格指数(鼓风机)", "dim": "price", "direction": "up", "latest": 96.6, "prev": 92.7, "yoy": 0.02, "freq": "week", "unit": "点", "update": "2026-06-07"},
+        {"name": "工程机械景气历史分位", "dim": "valuation_quantile", "direction": "up", "latest": 62.0, "prev": 55.0, "yoy": null, "freq": "month", "unit": "%", "update": "2026-05-31"}
+      ]
+    }
+  ]
+}

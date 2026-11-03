@@ -1,0 +1,4 @@
+interface:
+  display_name: "韩国日本股票市场监测指标"
+  short_description: "按六大模块跟踪韩国与日本股市"
+  default_prompt: "请监测最近一个交易日的韩国或日本股市，先确认市场和日期。"

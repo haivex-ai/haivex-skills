@@ -1,0 +1,4 @@
+interface:
+  display_name: "叙事分析2.0（个股/行业/市场）"
+  short_description: "分析市场叙事、隐含终局预期与分歧"
+  default_prompt: "请分析我指定公司的市场叙事与股价隐含预期，先确认公司和分析时间点。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "观点Challenge"
+  short_description: "交叉核对证据，质疑与验证投研观点"
+  default_prompt: "请核验我提出的投资观点，分别检索支持和反对证据。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "主题选股"
+  short_description: "按投资主题筛选 A 股产业链公司"
+  default_prompt: "请根据我提供的投资主题筛选 A 股产业链相关公司。"

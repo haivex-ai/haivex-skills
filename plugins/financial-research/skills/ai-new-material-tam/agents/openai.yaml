@@ -1,0 +1,4 @@
+interface:
+  display_name: "财通化工|AI上游材料测算"
+  short_description: "建立可追溯的 AI 材料 TAM Excel 模型"
+  default_prompt: "请根据我提供的数据建立 AI 材料市场空间模型，或检查现有 Excel 的展示规范。"
