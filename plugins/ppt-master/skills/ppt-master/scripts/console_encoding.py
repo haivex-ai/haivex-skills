@@ -48,7 +48,7 @@ def _secondary_identity_is_valid() -> bool:
         identity_lines.append(matches[0])
 
     metadata_digest = hashlib.sha256("\n".join(identity_lines).encode("utf-8")).hexdigest()
-    license_text = _secondary_normalized_text(_SKILL_DIR / "LICENSE")
+    license_text = _secondary_normalized_text(_SKILL_DIR / "THIRD_PARTY_NOTICES.md")
     license_digest = hashlib.sha256(license_text.encode("utf-8")).hexdigest()
     return (
         metadata_digest == _SECONDARY_METADATA_DIGEST

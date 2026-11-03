@@ -21,6 +21,6 @@
 
 上游项目：https://github.com/hugohe3/ppt-master
 
-项目许可见 [LICENSE](LICENSE)。原作者的归属信息、完整性检查与赞助说明完整保留。图标、声音等第三方资源遵循各自的许可及声明，见 `templates/icons/THIRD_PARTY_NOTICES.md`、`templates/sounds/THIRD_PARTY_NOTICES.md` 和资源目录内的说明。
+版权与许可集中保留在 [第三方声明](THIRD_PARTY_NOTICES.md)。已移除赞助推广文件及相应的必需文件检查。图标、声音等第三方资源遵循各自的许可及声明，见 `templates/icons/THIRD_PARTY_NOTICES.md`、`templates/sounds/THIRD_PARTY_NOTICES.md` 和资源目录内的说明。
 
-本副本仅增加 Haivex 中文展示元数据和此用户概览，工作流、脚本及静态资产沿用本地已安装的 6.8.0 版本。
+本副本增加 Haivex 中文展示信息，清理赞助推广内容，并将独立许可文件归集为第三方声明；演示文稿工作流、生成算法和静态资产沿用 6.8.0 版本。

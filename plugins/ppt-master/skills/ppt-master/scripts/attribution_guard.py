@@ -26,7 +26,7 @@ from pathlib import Path
 
 
 _ERROR_MESSAGE = (
-    "PPT Master skill integrity check failed. Please use the complete official "
+    "PPT Master skill integrity check failed. Please use the complete Haivex "
     "distribution without removing its attribution files."
 )
 _SKILL_DIR = Path(__file__).resolve().parent.parent
@@ -35,8 +35,7 @@ _EXACT_METADATA_VALUES = {
     "license": '"MIT"',
     "official_repository": '"https://github.com/hugohe3/ppt-master"',
 }
-_REQUIRED_METADATA_FIELDS = ("sponsors",)
-_REQUIRED_ATTRIBUTION_FILES = ("LICENSE", "SPONSORS.md", "SPONSORS_CN.md")
+_REQUIRED_ATTRIBUTION_FILES = ("THIRD_PARTY_NOTICES.md",)
 _LICENSE_DIGEST = "80cefc234c1ec12a8cece4344f16300c634fa03df7891686fcf979e3828f0921"
 _REQUIRED_GATE_FILES = (
     "scripts/console_encoding.py",
@@ -85,10 +84,6 @@ def _metadata_is_valid() -> bool:
             )) == 1
             for field, value in _EXACT_METADATA_VALUES.items()
         )
-        and all(
-            len(re.findall(rf"(?m)^  {re.escape(field)}\s*:", metadata)) == 1
-            for field in _REQUIRED_METADATA_FIELDS
-        )
         and skill_text.count(_SKILL_GATE_MARKER) == 1
     )
 
@@ -99,7 +94,7 @@ def _protected_files_are_valid() -> bool:
         path = _SKILL_DIR / relative_path
         if not path.is_file():
             return False
-    license_digest = hashlib.sha256(_normalized_bytes(_SKILL_DIR / "LICENSE")).hexdigest()
+    license_digest = hashlib.sha256(_normalized_bytes(_SKILL_DIR / "THIRD_PARTY_NOTICES.md")).hexdigest()
     return license_digest == _LICENSE_DIGEST
 
 
