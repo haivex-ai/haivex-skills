@@ -352,12 +352,12 @@ def main() -> int:
         xticklabels=[m[2:] for m in months], annot_kws={"size": 8},
     )
     ax.set_title(
-        f"图A {args.company}叙事关键词在研报/纪要等中的月度渗透率（%，Alpha派文本库，{months[0]}至{months[-1]}）",
+        f"图A {args.company}叙事关键词在研报/纪要等中的月度渗透率（%，{months[0]}至{months[-1]}）",
         fontsize=13, fontweight="bold", pad=12,
     )
     ax.tick_params(axis="x", rotation=45, labelsize=9)
     ax.tick_params(axis="y", rotation=0, labelsize=9)
-    fig.text(0.99, 0.01, "来源：Alpha派研报/纪要/点评/社媒等去噪样本｜同月同文档计1次｜分母=当月公司相关文档数",
+    fig.text(0.99, 0.01, "来源：研报/纪要/点评/社媒等去噪样本｜同月同文档计1次｜分母=当月公司相关文档数",
              fontsize=8, color="#556270", ha="right", va="bottom")
     p1 = img / "关键词热度_月度渗透率热力图.png"
     fig.savefig(p1, dpi=160, bbox_inches="tight", facecolor="white")

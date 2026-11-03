@@ -323,7 +323,7 @@ python scripts/dcf_implied.py implied --cap {当前市值} --e1 {E1} --e2 {E2} -
 ### 外部依赖
 
 - **行业研究报告与产业链数据**（强制）：行业产能、价格、上下游供需、政策环境、技术变革，作为每项变动分析的背景锚点。来源：公司年报行业分析章节、行业协会数据、券商行业研报、公开财经数据。
-- **（可选）全A样本横向对比 / 分位数定位**：仅当用户**显性要求**时启用，**不进默认报告**。数据由 Agent 用 AlphaPai 平台数据查询工具取数（全A样本横截面 + 目标公司一致预期，落地为 CSV），再由 `scripts/financial_scoring.py` 在本地计算全A分位数、五大指标打分与异常信号。取数口径与字段清单见 `references/scoring-model-guide.md`。**不依赖用户上传 Excel，不联网抓取，不涉及任何外部数据品牌（一致预期统一称"一致预期"）。**
+- **（可选）全A样本横向对比 / 分位数定位**：仅当用户**显性要求**时启用，**不进默认报告**。数据由 Agent 使用已配置的数据查询工具取数（全A样本横截面 + 目标公司一致预期，落地为 CSV），再由 `scripts/financial_scoring.py` 在本地计算全A分位数、五大指标打分与异常信号。取数口径与字段清单见 `references/scoring-model-guide.md`。**不依赖用户上传 Excel，不联网抓取，不涉及任何外部数据品牌（一致预期统一称"一致预期"）。**
 
 > 注：DCF 反算脚本 `scripts/dcf_implied.py` 与全A打分脚本 `scripts/financial_scoring.py` 均已内置于本 skill，无需依赖外部 skill。
 

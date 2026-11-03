@@ -114,7 +114,7 @@ python skills/user/penetrate-narrative-stock-analysis/scripts/collect_financials
 
 若脚本告警 `e1/e2 缺失`：从 `03_report.md` 个股深度研报提取对应财年净利润预测均值，手动补入 `dcf_params.json` 的 `e1`/`e2`，并在 `e_notes` 标注"研报盈利预测交叉"。**注意 MU 等非 12 月财年**：`base-year` 用财年结束年（美光 FY2025 结束于 2025-08），估计 csv 的 `date` 年份即财年结束年。
 
-> **数据源标注约束**：对外及报告中一律标注"来源于 Alpha派数据库"，禁止写 Wind/同花顺/Bloomberg 等第三方产品名。
+> **数据源标注约束**：对外及报告中按实际使用的数据来源标注，并保留可核验的取数记录。
 
 ### 2.3 装配后必做自检
 

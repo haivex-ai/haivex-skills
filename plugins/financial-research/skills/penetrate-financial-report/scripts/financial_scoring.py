@@ -871,7 +871,7 @@ def run(company, sample_path, consensus_path, output_path, report_period=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="全A样本财务打分与分位数定位（AlphaPai 平台取数，本地算分）"
+        description="全A样本财务打分与分位数定位（数据查询工具取数，本地算分）"
     )
     parser.add_argument(
         "--company",

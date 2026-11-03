@@ -27,7 +27,7 @@
     "subtitle": "(300085.SZ) — 金融科技/参股金融牌照",  # 封面副标题
     "date": "2026年7月7日",                        # 封面日期
     "data_base_date": "2026年7月6日",              # 免责声明中的数据基准日（可选）
-    "disclaimer_sources": "公司公告、定期报告、Alpha派调研/会议纪要及公开信息，经交叉验证"  # 可选，覆盖免责声明数据来源表述
+    "disclaimer_sources": "公司公告、定期报告、调研/会议纪要及公开信息，经交叉验证"  # 可选，覆盖免责声明数据来源表述
   },
   "blocks": [
     {"type": "heading", "level": 1, "text": "摘要与核心结论"},
@@ -329,7 +329,7 @@ def setup_page(doc):
 def add_disclaimer(doc, data_base_date=None, sources=None):
     doc.add_page_break()
     add_heading(doc, "免责声明", level=1)
-    src = sources or "公司公告、定期报告、Alpha派调研/会议纪要及公开信息，经交叉验证"
+    src = sources or "公司公告、定期报告、调研/会议纪要及公开信息，经交叉验证"
     add_body(doc, f"本报告基于穿透叙事股票分析框架，依据DCF第一性原理与A股市场定价机制（空间叙事+拍卖机制）进行推演分析。所有数据来源于{src}。", size=10, color=COLOR_GRAY)
     add_body(doc, "本报告不构成任何投资建议。报告中的业绩空间测算、情景概率赋值、目标价推演均为基于公开信息的分析推演，不构成对未来股价的承诺。投资有风险，决策需谨慎。投资者应基于自身风险承受能力与独立判断做出投资决策。", size=10, color=COLOR_GRAY)
     if data_base_date:

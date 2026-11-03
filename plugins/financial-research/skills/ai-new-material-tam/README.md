@@ -14,5 +14,3 @@
 ## 运行条件
 
 脚本依赖 openpyxl；自动取数需 search_global_data、search_paipai、quick_fetch_stock_financials 或相应委托能力。仅搭骨架和检查用户 Excel 可独立运行。
-
-安装此技能会提供分析规则、参考文件和随包资源，不会自动接通 AlphaPai 的内部接口或数据权限。使用完整流程前，须确认宿主已提供所需工具及数据；缺失时应说明无法完成的步骤。

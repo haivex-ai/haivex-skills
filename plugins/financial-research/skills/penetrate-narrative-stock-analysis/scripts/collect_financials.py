@@ -284,12 +284,12 @@ def assemble_cn(args):
         "base_year": args.base_year, "steady_year": args.steady_year,
         "r": 0.10, "asof": args.asof,
         "currency": "CNY",
-        "shares_note": args.shares_note or "总股本来自 Alpha派数据库（quick_fetch 缺总股本，由 data_analyst 补）",
+        "shares_note": args.shares_note or "总股本由输入数据提供，具体来源需按实际取数记录注明",
         "e_notes": e_notes,
         "consensus_raw": consensus,
         "valuation": {k: market.get(k) for k in ("pe_ttm", "pb", "ps") if market.get(k) is not None},
         "brokers": _load_brokers(args.brokers_json),
-        "data_source_note": "来源于 Alpha派数据库",
+        "data_source_note": "数据来源以实际取数记录为准",
     }
     if missing:
         print(f"[warn] 以下年度一致预期缺失，需补研报盈利预测交叉: {missing}", file=sys.stderr)
@@ -328,12 +328,12 @@ def assemble_us(args):
         "base_year": args.base_year, "steady_year": args.steady_year,
         "r": 0.10, "asof": args.asof,
         "currency": "USD",
-        "shares_note": args.shares_note or "股本/市值/价来自 Alpha派数据库(美股域)；quick_fetch 对美股为空",
+        "shares_note": args.shares_note or "股本/市值/价格由输入数据提供，具体来源需按实际取数记录注明",
         "e_notes": e_notes,
         "us_estimates_raw": est,
         "estimate_caveat": "美股一致预期来自全球数据库(接受远端财年)；近端财年缺失时以研报盈利预测交叉补入(用户确认口径)",
         "brokers": _load_brokers(args.brokers_json),
-        "data_source_note": "来源于 Alpha派数据库",
+        "data_source_note": "数据来源以实际取数记录为准",
     }
     if missing:
         print(f"[warn] 以下财年一致预期缺失，需研报盈利预测交叉补入 e1/e2/e3: {missing}", file=sys.stderr)
