@@ -121,3 +121,33 @@ test('一条命令自动升版并提交；上传失败保留草稿，重试后�
     expect(JSON.parse(await readFile(state, 'utf8')).uploads).toBe(packed.assets.length)
   } finally { process.env.PATH = priorPath }
 })
+
+
+test('大型资源技能可超过原 300/5000 文件限制，仍拒绝超过两万文件', async () => {
+  const files: Record<string, Uint8Array> = base()
+  for (let i = 0; i < 6_000; i++) files[`plugins/example/skills/example/templates/icons/icon-${i}.svg`] = strToU8('<svg/>')
+  files['plugins/example/skills/example/.env.example'] = strToU8('IMAGE_API_KEY=')
+  const packed = await buildPackage(files, 'example', revision)
+  const asset = packed.assets.find(asset => asset.filename.endsWith('.skill.zip'))!
+  const unpacked = unzipSync(asset.bytes)
+  expect(Object.keys(unpacked)).toHaveLength(6_002)
+  expect(unpacked['templates/icons/icon-5999.svg']).toEqual(strToU8('<svg/>'))
+  expect(unpacked['.env.example']).toEqual(strToU8('IMAGE_API_KEY='))
+  for (let i = 6_000; i < 20_000; i++) files[`plugins/example/skills/example/templates/icons/icon-${i}.svg`] = strToU8('<svg/>')
+  await expect(buildPackage(files, 'example', revision)).rejects.toThrow('单个技能文件过多')
+}, 60_000)
+
+test('仅放行配置示例，真实环境配置在收集和打包时仍被拒绝', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'haivex-publish-env-')); roots.push(root)
+  for (const [name, bytes] of Object.entries(base())) { await mkdir(join(root, name, '..'), { recursive: true }); await writeFile(join(root, name), bytes) }
+  const example = 'plugins/example/skills/example/.env.example'
+  await writeFile(join(root, example), 'IMAGE_API_KEY=')
+  expect((await collectFiles(root, 'example'))[example]).toEqual(strToU8('IMAGE_API_KEY='))
+  for (const filename of ['.env', '.env.local', '.env.production']) {
+    const name = `plugins/example/skills/example/${filename}`
+    await expect(buildPackage({ ...base(), [name]: strToU8('secret') }, 'example', revision)).rejects.toThrow('本地文件')
+    await writeFile(join(root, name), 'secret')
+    await expect(collectFiles(root, 'example')).rejects.toThrow('非发布文件')
+    await rm(join(root, name))
+  }
+})

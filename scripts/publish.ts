@@ -9,6 +9,8 @@ import { validateSkill } from '../plugins/skill-creator/skills/skill-creator/scr
 
 export const REPOSITORY = 'haivex-ai/haivex-skills'
 const MARKETPLACE = '.agents/plugins/marketplace.json'
+const MAX_SKILL_FILES = 20_000
+const MAX_PACKAGE_FILES = 50_000
 const identifier = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const object = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('清单格式无效')
@@ -44,7 +46,7 @@ export const collectFiles = async (root: string, id: string) => {
     if (info.isDirectory()) {
       for (const entry of await readdir(join(root, relative))) {
         if (entry === '.DS_Store') continue
-        if (entry === 'node_modules' || entry === '.git' || entry.startsWith('.env')) throw new Error(`请移除非发布文件：${entry}`)
+        if (entry === 'node_modules' || entry === '.git' || (entry.startsWith('.env') && entry !== '.env.example')) throw new Error(`请移除非发布文件：${entry}`)
         await visit(`${relative}/${entry}`)
       }
     } else if (info.isFile()) files[relative] = await readFile(join(root, relative))
@@ -80,9 +82,9 @@ export const buildPackage = async (files: Record<string, Uint8Array>, id: string
       if (parts.some((part) => !part || part === '.' || part === '..' || /[\\:\x00]/.test(part) || /[. ]$/.test(part) || /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(part))) throw new Error('发布文件路径无效')
       if (seen.has(name.toLowerCase())) throw new Error('发布文件大小写冲突')
       seen.add(name.toLowerCase())
-      if (parts.some((part) => part === '.git' || part === 'node_modules' || part.startsWith('.env') || part.toLowerCase() === '.haivex-install.json')) throw new Error('发布包包含本地文件')
+      if (parts.some((part) => part === '.git' || part === 'node_modules' || (part.startsWith('.env') && part !== '.env.example') || part.toLowerCase() === '.haivex-install.json')) throw new Error('发布包包含本地文件')
       total += bytes.length
-      if (total > 80 * 1024 * 1024 || seen.size > 5000) throw new Error('发布包解压后过大')
+      if (total > 80 * 1024 * 1024 || seen.size > MAX_PACKAGE_FILES) throw new Error('发布包解压后过大')
       const skill = /^plugins\/[^/]+\/skills\/([^/]+)\/(.+)$/.exec(name)
       if (skill) {
         if (!identifier.test(skill[1]!) || skill[1]!.length > 64) throw new Error('技能名称无效')
@@ -99,12 +101,12 @@ export const buildPackage = async (files: Record<string, Uint8Array>, id: string
     }
     if (!skillFiles.size || skillFiles.size > 200) throw new Error('每个插件需要 1 至 200 个技能')
     for (const [skill, count] of skillFiles) {
-      if (count > 300) throw new Error('单个技能文件过多')
+      if (count > MAX_SKILL_FILES) throw new Error('单个技能文件过多')
       const result = await validateSkill(join(temporary, 'plugins', id, 'skills', skill))
       if (!result.valid) throw new Error(result.message)
     }
     const bytes = zipSync(entries)
-    if (bytes.length > 20 * 1024 * 1024) throw new Error('发布包超过 20 MiB')
+    if (bytes.length > 32 * 1024 * 1024) throw new Error('发布包超过 32 MiB')
     // 可安装包在发布时生成，业务后端只读取清单并原样分发。
     const assets = [{ filename: `${id}-${version}.zip`, bytes, sha256: createHash('sha256').update(bytes).digest('hex') }]
     const skills = [...skillFiles.keys()].sort().map((skillId) => {
@@ -120,7 +122,7 @@ export const buildPackage = async (files: Record<string, Uint8Array>, id: string
       const info = object(ui.interface ?? {}), metadata = object(meta.metadata ?? {})
       const text = (value: unknown) => typeof value === 'string' ? value.trim() : ''
       const packageBytes = zipSync(skillEntries)
-      if (packageBytes.length > 20 * 1024 * 1024) throw new Error('单个技能包超过 20 MiB')
+      if (packageBytes.length > 32 * 1024 * 1024) throw new Error('单个技能包超过 32 MiB')
       const sha256 = createHash('sha256').update(packageBytes).digest('hex')
       const filename = `${skillId}-${version}.skill.zip`
       assets.push({ filename, bytes: packageBytes, sha256 })
